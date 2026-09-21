@@ -1,0 +1,32 @@
+{
+  "name": "line-calc",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "How many LED panels fit on one processor port, and how many on one power circuit — from a library of real panels or a custom one.",
+  "license": "MIT",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc -b",
+    "deploy": "npm run build && npx wrangler deploy",
+    "gen:panels": "node scripts/gen-panels.mjs",
+    "serve:dist": "python3 scripts/serve-dist.py --dir dist --port 4321"
+  },
+  "dependencies": {
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
+  },
+  "devDependencies": {
+    "@types/node": "^26.3.0",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.5",
+    "@vitejs/plugin-react": "^6.1.0",
+    "typescript": "^7.0.2",
+    "vite": "^8.2.2",
+    "vitest": "^4.1.11"
+  }
+}
