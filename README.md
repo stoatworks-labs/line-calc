@@ -127,6 +127,10 @@ npm test           # 28 tests, including the calibration pins
 npm run build
 ```
 
+<!-- attributions:start -->
+This project is built on other people's work — see [ATTRIBUTIONS.md](ATTRIBUTIONS.md).
+<!-- attributions:end -->
+
 ## Licence
 
 MIT. See [LICENSE](LICENSE).
