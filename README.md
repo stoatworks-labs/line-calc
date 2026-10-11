@@ -1,4 +1,18 @@
-# Line Calc
+# Line Calc — moved into Pixel Peeker
+
+> **Line Calc is now the Line calc view in [Pixel Peeker](https://github.com/stoatworks-labs/pixel-peeker):
+> <https://pixel-peeker.stoatworks-labs.com/#line>.** Since 2026-10-11,
+> `line-calc.stoatworks-labs.com` permanently redirects there. It is the same question — how
+> many panels fit on one processor port, and how many on one power circuit — answered on
+> Pixel Peeker's own capacity model and cabinet library instead of a copy and a dated
+> snapshot of them. Please report bugs and ask for features on
+> [pixel-peeker](https://github.com/stoatworks-labs/pixel-peeker/issues).
+>
+> This repo is kept for its history. It now deploys only the redirect
+> (`worker/redirect.js`); the app source in `src/` is no longer built or served. The rest of
+> this README describes the tool as it was.
+
+---
 
 > **AI-assisted project.** This codebase was created with [Claude Code](https://claude.com/claude-code)
 > (Anthropic), directed and reviewed by a human author. The data-line model is verified

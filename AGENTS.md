@@ -1,5 +1,12 @@
 # Working on Line Calc
 
+**Retired 2026-10-11.** Line Calc is now the Line calc view in Pixel Peeker
+(`stoatworks-labs/pixel-peeker`, `/#line`), and this repo deploys only
+`worker/redirect.js`: a 301 from every path on `line-calc.stoatworks-labs.com` to
+`https://pixel-peeker.stoatworks-labs.com/#line`, plus a `/sw.js` that retires the old
+offline copy. Do not restore the app build or `[assets]` in `wrangler.toml`; change the
+line calculator in pixel-peeker. Everything below describes the app as it was.
+
 Read `docs/NOTES.md` first — it records which design choices are load-bearing and would
 be wrong to "simplify".
 

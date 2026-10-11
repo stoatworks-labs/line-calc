@@ -1,4 +1,8 @@
-# Build the site and put it in front of visitors.
+# Deploy the redirect that line-calc.stoatworks-labs.com has been since 2026-10-11,
+# when Line Calc moved into Pixel Peeker as its Line calc view. There is nothing to
+# build: wrangler deploys worker/redirect.js on its own (see wrangler.toml), and the
+# check at the end proves the hostname answers 301 to the right place. The original
+# build-and-serve steps are in this file's history.
 #
 # Here from the first commit, so this repo never goes through the phase the rest of
 # the fleet did, where a tool shipped only when somebody remembered to run
@@ -38,7 +42,6 @@ jobs:
       - uses: actions/setup-node@v7
         with:
           node-version: 22
-          cache: npm
 
       # Fail in a second rather than after a build. A deploy that cannot
       # authenticate is the whole point of this job failing to happen.
@@ -59,17 +62,6 @@ jobs:
           fi
           echo "token present - ok"
 
-      - run: npm ci
-
-      - run: npm test
-
-      - run: npm run build
-
-      - name: Smoke-check the built site
-        uses: stoatworks-labs/smoke-check@v1
-        with:
-          dir: dist
-
       # wrangler is pinned rather than left to resolve to latest: an unpinned npx
       # would let a wrangler major change how deploys behave on a morning nobody
       # touched this repo. Dependabot's github-actions ecosystem only bumps `uses:`
@@ -81,41 +73,27 @@ jobs:
           WRANGLER_SEND_METRICS: "false"
         run: npx --yes wrangler@4.116.0 deploy
 
-      # Prove it actually landed, against the domain a visitor uses. The whole body
-      # cannot be compared: Cloudflare injects a bot-management script before
-      # </body> carrying a per-request nonce, so no two responses are identical.
-      # The <head> is untouched by that injection and carries the hashed asset
-      # names, so it moves for a code change and a meta-only change alike.
-      #
-      # The grep is not belt-and-braces. A page with no </head> at all — flock's
-      # hand-written demo is one — makes the sed print the whole document, which
-      # then DOES include Cloudflare's injected script and its per-request nonce,
-      # and the hash comes out different on every attempt. Dropping that one line
-      # makes the comparison work whether the page closes its head or not.
-      #
-      # -F is load-bearing: without it grep reads the $ signs as end-of-line
-      # anchors and the pattern matches nothing at all, so the filter silently
-      # does nothing. It looked like it worked only because GitHub's runners do
-      # not get served the challenge script in the first place.
-      - name: Check the live site is serving this build
+      # Prove it actually landed, against the domain a visitor uses: a 301 to Pixel
+      # Peeker's Line calc view. The query string is a cache-buster, so an edge or a
+      # proxy holding the old page cannot make this pass or fail on stale content.
+      - name: Check the live site redirects to Pixel Peeker
         run: |
           set -euo pipefail
-          want=$(sed -n '1,/<\/head>/p' dist/index.html \
-                 | grep -vF '__CF$cv$params' | shasum -a 256 | cut -d' ' -f1)
-          echo "expecting the live <head> to hash to $want"
+          want="https://pixel-peeker.stoatworks-labs.com/#line"
           for attempt in 1 2 3 4 5; do
-            got=$(curl -sS --max-time 30 "https://line-calc.stoatworks-labs.com/" \
-                  | sed -n '1,/<\/head>/p' | grep -vF '__CF$cv$params' \
-                  | shasum -a 256 | cut -d' ' -f1 || true)
-            if [ "$got" = "$want" ]; then
-              echo "live site is serving this build (attempt $attempt)"
+            headers=$(curl -sS -I --max-time 30 \
+                      "https://line-calc.stoatworks-labs.com/?cb=${GITHUB_RUN_ID}-${attempt}" \
+                      | tr -d '\r' || true)
+            status=$(printf '%s\n' "$headers" | awk 'NR==1 {print $2}')
+            location=$(printf '%s\n' "$headers" | awk 'tolower($1) == "location:" {print $2}')
+            if [ "$status" = "301" ] && [ "$location" = "$want" ]; then
+              echo "live site redirects to $want (attempt $attempt)"
               exit 0
             fi
-            echo "not there yet, got $got — retrying in 10s (attempt $attempt)"
+            echo "not there yet: status '$status', location '$location' — retrying in 10s (attempt $attempt)"
             sleep 10
           done
-          echo "::error::Deployed, but https://line-calc.stoatworks-labs.com/ is still not serving this"
-          echo "::error::build's <head>. The upload succeeded, so this is the edge"
-          echo "::error::serving something else — check the Worker's routes, and that"
-          echo "::error::line-calc is what the custom domain actually points at."
+          echo "::error::Deployed, but https://line-calc.stoatworks-labs.com/ does not answer"
+          echo "::error::301 -> $want. Check the Worker's routes, and that line-calc is what the"
+          echo "::error::custom domain actually points at."
           exit 1

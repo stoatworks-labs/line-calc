@@ -1,34 +1,25 @@
-# Cloudflare deployment for Line Calc.
+# Cloudflare deployment for line-calc.stoatworks-labs.com — now a redirect.
 #
-# A static-assets-only Worker: no server code, nothing to run on the edge. Like
-# Blend Calc and unlike the recorded demos in the fleet, this one IS built by
-# Cloudflare — it is plain Vite and it is the real tool rather than a capture, so
-# `dist/` stays out of git. Set the build command in the Cloudflare project to:
-#
-#   npm ci && npm run build
-#
-# Without this file, `wrangler deploy` looks for a static directory at the repo root,
-# finds none (the build output is under dist/) and fails with "Could not detect a
-# directory containing static files".
-#
-# `public/_headers` is copied into dist/ by Vite and carries the CSP and the
-# immutable-cache rule for hashed assets; the assets runtime honours it.
+# Line Calc moved into Pixel Peeker on 2026-10-11 as its Line calc view. This Worker
+# no longer serves the app: worker/redirect.js answers every request with a 301 to
+# https://pixel-peeker.stoatworks-labs.com/#line (and /sw.js with a script that
+# retires the old offline copy — see the comment there). There is no [assets] block
+# and nothing to build; the Vite source in src/ is history, kept so the repo still
+# explains itself.
 #
 # `name` must match the Cloudflare project.
 
 name = "line-calc"
+main = "worker/redirect.js"
 compatibility_date = "2026-09-21"
-
-[assets]
-directory = "./dist"
 
 # The custom domain is declared here rather than clicked into the dashboard, so the
 # routing is in the repo and a fresh deploy reproduces it. Same shape as
-# negative-space, arraycad and simple-rta.
+# negative-space, arraycad and simple-rta. Keep it: the redirect is only useful on the
+# hostname people have bookmarked.
 #
 # Note this silently disables the workers.dev URL — wrangler defaults `workers_dev`
-# to false once routes exist — so *.workers.dev links to this app 404 from the first
-# deploy that carries this block.
+# to false once routes exist.
 [[routes]]
 pattern = "line-calc.stoatworks-labs.com"
 custom_domain = true
